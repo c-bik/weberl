@@ -15,3 +15,7 @@ Not supported in this version -
 - the cursor is free to move anywhere in the console might break if typed in a wrong place
 - 'up' and 'dwon' arrows to browse through history is not supported
 - IMPORTANT: after executing 'q().' you are on your own (refreshing browser might help).
+
+Browser Support -
+- IE 10
+- Chrome
