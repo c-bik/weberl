@@ -48,7 +48,8 @@ start_link() ->
     {?MODULE, Pid}.
 
 init([OwnerPid]) when is_pid(OwnerPid) ->
-    case (catch erlang:open_port({spawn_executable, os:find_executable("erl.exe")}, [stream, exit_status, use_stdio])) of
+    {ok, Executable} = application:get_env(weberl, exec),
+    case (catch erlang:open_port({spawn_executable, os:find_executable(Executable)}, [stream, exit_status, use_stdio])) of
         {'EXIT', Reason} ->
             io:format(user, "~p could not open port: ~p~n", [?MODULE, Reason]),
             {stop, Reason};
