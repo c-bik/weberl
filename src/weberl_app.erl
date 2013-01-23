@@ -21,6 +21,19 @@ start(_Type, _Args) ->
 	{ok, _} = cowboy:start_http(http, 100, [{port, 8080}], [
 		{env, [{dispatch, Dispatch}]}
 	]),
+
+    {ok, FlashFallback} = application:get_env(weberl, flash_fallback),
+    case FlashFallback of
+       true ->
+            %% we serve the flash policy file which MUST be on port 843
+            %% you need root privileges to run this
+            ranch:start_listener(flash_fallback, 100,
+                                 ranch_tcp, [{port, 843}],
+                                 flash_policy, []);
+        _ ->
+            ok
+    end,
+
     io:format(user, "weberl started at http://localhost:8080/index.html~n", []),
 	weberl_sup:start_link().
 
