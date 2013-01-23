@@ -1,0 +1,14 @@
+{application, weberl, [
+	{description, "An Erlang Console in Webpage."},
+	{vsn, "1"},
+	{modules, []},
+	{registered, []},
+	{applications, [
+		kernel,
+		stdlib,
+		cowboy
+	]},
+	{mod, {weberl_app, []}},
+	{env, []}
+]}.
+
