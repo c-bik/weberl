@@ -4,8 +4,13 @@
         </textarea>
     </body>
     <script language='javascript' src="http://code.jquery.com/jquery.min.js"> </script>
+    <script language='javascript' src="swfobject.js"></script>
+    <script language='javascript' src="web_socket.js"></script>
     <script language='javascript'>
         $(document).ready(function(){
+            // Set URL of your WebSocketMain.swf here:
+            WEB_SOCKET_SWF_LOCATION = "WebSocketMainInsecure.swf";
+
             var ws = new WebSocket('ws://localhost:8080/ws');
             ws.onopen = function(){
                 console.log('WebSocket: opened');

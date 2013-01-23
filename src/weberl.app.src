@@ -9,6 +9,9 @@
 		cowboy
 	]},
 	{mod, {weberl_app, []}},
-	{env, []}
+	{env, [
+        {exec, "erl"},
+        {flash_fallback, true}
+    ]}
 ]}.
 
