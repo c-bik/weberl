@@ -3,7 +3,8 @@
 
 -record(state, {
     port,
-    buffer = empty
+    buffer = empty,
+    owner
 }).
 
 %% gen_server callbacks
@@ -43,17 +44,17 @@ read_all(Buffer, Pid) ->
     end.
 
 start_link() ->
-    {ok, Pid} = gen_server:start_link(?MODULE, [], []),
+    {ok, Pid} = gen_server:start_link(?MODULE, [self()], []),
     {?MODULE, Pid}.
 
-init(_) ->
+init([OwnerPid]) when is_pid(OwnerPid) ->
     case (catch erlang:open_port({spawn_executable, os:find_executable("erl.exe")}, [stream, exit_status, use_stdio])) of
         {'EXIT', Reason} ->
             io:format(user, "~p could not open port: ~p~n", [?MODULE, Reason]),
             {stop, Reason};
         Port ->
             io:format(user, "~p:~p init opened new port(~p): ~p~n", [?MODULE, self(), Port, erlang:port_info(Port)]),
-            {ok, #state{port=Port}}
+            {ok, #state{port=Port, owner=OwnerPid}}
     end.
 
 handle_call({send, Message}, _From, #state{port=Port} = State) ->
@@ -96,9 +97,10 @@ handle_cast(Data, State) ->
     io:format(user, "~p:~p unknown handle_cast ~p~n", [?MODULE, self(), Data]),
     {noreply, State}.
 
-terminate(Reason, #state{port=Port}) ->
-    io:format(user, "~p:~p Terminating ~p~n", [?MODULE, self(), Reason]),
+terminate(Reason, #state{port=Port, owner=OwnerPid}) ->
+    io:format(user, "~p:~p terminating ~p~n", [?MODULE, self(), Reason]),
     catch erlang:port_close(Port),
+    exit(OwnerPid,kill),
     ok.
 
 code_change(_OldVsn, State, _Extra) -> {ok, State}.

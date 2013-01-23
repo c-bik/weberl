@@ -16,18 +16,18 @@ init({tcp, http}, _Req, _Opts) ->
 
 websocket_init(_TransportName, Req, _Opts) ->
     Port = erl_port:start_link(),
-    erlang:start_timer(1000, self(), <<"Hello!">>),
+    erlang:start_timer(1000, self(), <<>>),
     {ok, Req, #state{port = Port}}.
 
 websocket_handle({text, Msg}, Req, #state{port = Port} = State) ->
     Message = binary_to_list(Msg),
-    io:format(user, "{~p,~p} RX ~n"++Message, [?MODULE, ?LINE]),
+    io:format(user, "~p:~p RX ~n"++Message, [?MODULE, ?LINE]),
     Port:exec(Message),
     timer:sleep(100),
     Buffer = Port:read_all(),
     Resp = lists:flatten(Buffer),
     RespBin = list_to_binary(Resp),
-    io:format(user, "{~p,~p} TX~n"++Resp, [?MODULE, ?LINE]),
+    io:format(user, "~p:~p TX~n"++Resp, [?MODULE, ?LINE]),
     {reply, {text, RespBin}, Req, State};
 websocket_handle(_Data, Req, State) ->
     io:format(user, "~p:~p unknown websocket_handle ~p!~n", [?MODULE, ?LINE, _Data]),
