@@ -17,7 +17,7 @@
     code_change/3]).
 
 %% API
--export([start_link/0
+-export([start_link/1
         ,exec/2
         ,readline/1
         ,read_all/1]).
@@ -43,13 +43,13 @@ read_all(Buffer, Pid) ->
         read_all(Buffer ++ [Res], Pid)
     end.
 
-start_link() ->
-    {ok, Pid} = gen_server:start_link(?MODULE, [self()], []),
+start_link(Args) ->
+    {ok, Pid} = gen_server:start_link(?MODULE, [self(),Args], []),
     {?MODULE, Pid}.
 
-init([OwnerPid]) when is_pid(OwnerPid) ->
+init([OwnerPid, Args]) when is_pid(OwnerPid) ->
     {ok, Executable} = application:get_env(weberl, exec),
-    case (catch erlang:open_port({spawn_executable, os:find_executable(Executable)}, [stream, exit_status, use_stdio])) of
+    case (catch erlang:open_port({spawn_executable, os:find_executable(Executable)}, [stream, exit_status, use_stdio, {args, Args}])) of
         {'EXIT', Reason} ->
             io:format(user, "~p could not open port: ~p~n", [?MODULE, Reason]),
             {stop, Reason};
