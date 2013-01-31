@@ -15,22 +15,20 @@ init({tcp, http}, _Req, _Opts) ->
     {upgrade, protocol, cowboy_websocket}.
 
 websocket_init(_TransportName, Req, _Opts) ->
-%    Port = erl_port:start_link([
-%          "-name"     , "node1@127.0.0.1"
-%        , "-setcookie", "somecookie"
-%    ]),
-%    erlang:start_timer(1000, self(), <<>>),
-%    {ok, Req, #state{port = Port}}.
     {ok, Req, #state{}}.
 
 websocket_handle({text, Msg}, Req, #state{port = undefined} = State) ->
     case jsx:decode(Msg) of
         [{<<"start_port">>, Args}] ->
-            ArgsList = lists:append([[binary_to_list(N), binary_to_list(V)] || {N,V} <- Args]),
+            {match,Args0} =re:run(Args, "(\".*\")|([^ ]+)", [{capture, first, list}, global]),
+            ArgsList = lists:append(Args0),
+            %io:format(user, "start opts ~p~n", [ArgsList]),
+            % ArgsList = lists:append([[binary_to_list(N), binary_to_list(V)] || {N,V} <- Args]),
             Port = erl_port:start_link(ArgsList),
             erlang:start_timer(1000, self(), <<>>),
             io:format(user, "rx start ~p~n", [ArgsList]),
             {reply, {text, <<>>}, Req, State#state{port = Port}};
+            %{reply, {text, <<>>}, Req, State};
         Unsupported ->
             io:format(user, "port not running cmd can't be served : ~p~n", [Unsupported]),
             {reply, {text, <<>>}, Req, State}

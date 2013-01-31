@@ -1,9 +1,9 @@
 <html>
     <body>
         <!-- input type="text" size="2" onKeyUp="this.value = event.keyCode; this.select();" / -->
-        <input type="text" id='-name' value='node1@localhost'/>
-        <input type="text" id='-setcookie' value='somecookie'/>
-        <input type="button" id='start_port' value='>'/>
+        <input type="text" id='options' style='width:100%'
+            value='-name node1@localhost -setcookie somecookie'
+        />
         <textarea id="erl_console" rows="4" cols="50" style="width: 100%; height: 100%" > </textarea>
     </body>
     <script language='javascript' src="http://code.jquery.com/jquery.min.js"> </script>
@@ -13,20 +13,16 @@
     </script -->
     <script language='javascript' src="web_socket.js"></script>
     <script language='javascript'>
-        function create_ws(node, url)
+        function create_ws(url)
         {
+            var node = $('#erl_console');
             var ws = new WebSocket(url);
             ws.onopen = function(){
                 node.val('');
                 console.log('WebSocket: opened');
-                var start_port =
-                { start_port :
-                    {
-                        '-name'      : $('#-name').val(),
-                        '-setcookie' : $('#-setcookie').val()
-                    }
-                };
-                ws.send(JSON.stringify(start_port));
+                ws.send(JSON.stringify(
+                    {start_port : $('#options').val()}
+                ));
             };
             ws.onclose = function(){
                 console.log('WebSocket: closed');
@@ -46,8 +42,11 @@
             // Set URL of your WebSocketMain.swf here:
             WEB_SOCKET_SWF_LOCATION = "WebSocketMainInsecure.swf";
 
-            $('#start_port').click(function() {
-                create_ws($('#erl_console'), 'ws://localhost:8080/ws');
+            $('#options').keypress(function(event) {
+                if (event.which == 13) {
+                    event.preventDefault();
+                    create_ws('ws://localhost:8080/ws');
+                }
             });
             
             $('#erl_console')
